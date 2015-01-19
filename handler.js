@@ -1,14 +1,14 @@
 var handler = {
-	path: "",
-	handle: function() {}
+  path: "",
+  handle: function() {}
 };
 
 handler.gen = function(path, func) {
-	var hand = {
-		path: path,
-		serveHTTP: func
-	};
-	return hand;
+  var hand = {
+    path: path,
+    serveHTTP: func
+  };
+  return hand;
 };
 
 module.exports = handler;
