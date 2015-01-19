@@ -1,0 +1,24 @@
+{
+  "name": "bonejs",
+  "version": "0.0.1",
+  "description": "bonejs http router",
+  "main": "mux.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/squiidz/bonejs"
+  },
+  "keywords": [
+    "mux",
+    "router",
+    "http"
+  ],
+  "author": "codingFerret",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/squiidz/bonejs/issues"
+  },
+  "homepage": "https://github.com/squiidz/bonejs"
+}
