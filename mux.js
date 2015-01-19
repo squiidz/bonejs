@@ -1,60 +1,97 @@
 var http = require('http');
 var newRoute = require('./route');
 
-var server = {
+var methods = ['GET', 'POST', 'UPDATE', 'DELETE', 'HEAD', 'OPTIONS'];
+
+// Mux object Definition
+var mux = {
 	port: 3000,
-	handlers: [],
+	handlers: {
+		GET: [],
+		POST: [],
+		DELETE: [],
+		UPDATE: []
+	},
 	logger: function() {}
 }
 
-server.badHandler = function(req, res) {
+mux.args = {};
+
+// 404 Handler
+mux.badHandler = function(req, res) {
 	res.writeHead(404, {});
 	res.end("Not Found");
 };
 
-server.serve = function(req, res) {
-	for (var i = 0; i < server.handlers.length; i++) {
-		if (req.url == server.handlers[i].path && req.method == server.handlers[i].method) {
-			server.log(req, res);
-			server.handlers[i].handler(req, res);
+// Function to provide at a http.createServer();
+mux.serve = function(req, res) {
+	for (var i = 0; i < mux.handlers[req.method].length; i++) {
+		if (mux.handlers[req.method][i].path == req.url) {
+			mux.log(req, res);
+			mux.handlers[req.method][i].handler(req, res);
 			return;
+		} else if (mux.handlers[req.method][i].pattern.valid) {
+			if (mux.handlers[req.method][i].match(req.url)) {
+				mux.args = mux.handlers[req.method][i].args;
+				mux.handlers[req.method][i].handler(req, res);
+			} else {
+				continue;
+			};
 		} else {
 			continue;
 		};
 	};
-	server.badHandler(req, res);
+	mux.badHandler(req, res);
 };
 
-
-server.handle = function(path, method, handler) {
-	server.handlers.push(newRoute(path, method, handler));
+// Register handler on every methods
+mux.handle = function(path, handler) {
+	for (m in methods) {
+		mux.handlers[m].push(newRoute(path, m, handler));
+	};
+};
+// Register handler on GET resquest only
+mux.get = function(path, handler) {
+	mux.handlers['GET'].push(newRoute(path, "GET", handler));
+};
+// Register handler on POST resquest only
+mux.post = function(path, handler) {
+	mux.handlers['POST'].push(newRoute(path, "POST", handler));
+};
+// Register handler on DELETE resquest only
+mux.delete = function(path, handler) {
+	mux.handlers['DELETE'].push(newRoute(path, "DELETE", handler));
+};
+// Register handler on UPDATE resquest only
+mux.update = function(path, handler) {
+	mux.handlers['UPDATE'].push(newRoute(path, "UPDATE", handler));
 };
 
-server.handleFunc = function(handler) {
-	server.handlers.push(handler);
-}
-
-server.set404 = function(func) {
-	server.badHandler = function(req, res) {
+// Set custom 404 handler
+mux.set404 = function(func) {
+	mux.badHandler = function(req, res) {
 		res.writeHead(404, {});
 		func(req, res);
 	};
 };
 
-server.log = function(req, res) {
-	if (server.log !== null) {
-		server.logger(req, res);
+// Log request
+mux.log = function(req, res) {
+	if (mux.log !== null) {
+		mux.logger(req, res);
 	};
 };
 
-server.setLog = function(func) {
-	server.logger = func;
+// Set a logger on the mux
+mux.setLog = function(func) {
+	mux.logger = func;
 };
 
-server.listen = function(port) {
-	server.port = port;
-	http.createServer(server.serve).listen(server.port);
-	console.log("Server Listening on " + server.port);
+// Start a server with the mux
+mux.listen = function(port) {
+	mux.port = port;
+	http.createServer(mux.serve).listen(mux.port);
+	console.log("Server Listening on " + mux.port);
 };
 
-module.exports = server;
+module.exports = mux;
